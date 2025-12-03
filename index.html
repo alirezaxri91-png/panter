@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>پانتر — تغییر اندازه عکس</title>
+  <meta name="description" content="پانتره: وب‌پیج پیشرفتهٔ تغییر ابعاد عکس با درگ/دراپ، چندفایل، برش‌های آماده برای یوتوب و اینستاگرام، تبدیل فرمت و دانلود زیپ">
+  <!-- Tailwind CDN for quick good looking UI -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Vazir Persian font -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css">
+  <style>
+    /* Custom tweaks */
+    body{font-family: 'Vazir', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial}
+    .dropzone{transition: background-color .15s, border-color .15s}
+    .thumb{height:90px;width:90px;object-fit:cover;border-radius:8px}
+    .control-label{font-weight:600}
+    /* RTL tweaks for nicer layout */
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen p-6">
+  <div class="max-w-6xl mx-auto">
+    <header class="mb-4">
+      <h1 class="text-2xl font-extrabold">پانتر — تغییر اندازه عکس </h1>
+      <p class="text-sm text-slate-600">  پلتفرم تغییر سایز عکس با ابزار حرفه ای</p>
+    </header>
+
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <!-- Left column controls -->
+      <section class="lg:col-span-1 space-y-4">
+        <div id="dropzone" class="dropzone border-2 border-dashed border-slate-300 rounded-lg p-4 text-center bg-white">
+          <p class="text-slate-600">فایل یا فایل‌ها را اینجا رها کن یا کلیک کن برای انتخاب 📂</p>
+          <input id="fileInput" type="file" accept="image/*" multiple class="hidden">
+          <div class="mt-3 flex justify-center gap-2">
+            <button id="pickBtn" class="px-4 py-2 bg-amber-500 rounded text-white">انتخاب فایل</button>
+            <button id="clearBtn" class="px-4 py-2 border rounded">پاک کن</button>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded shadow">
+          <h3 class="text-lg font-semibold">تنظیمات خروجی</h3>
+          <div class="mt-3 space-y-3">
+            <div>
+              <label class="control-label">عرض جدید پیکسل</label>
+              <input id="widthInput" type="number" min="1" placeholder="مثلا 1024" class="w-full mt-1 p-2 border rounded">
+            </div>
+            <div>
+              <label class="control-label">ارتفاع جدید پیکسل</label>
+              <input id="heightInput" type="number" min="1" placeholder="مثلا 768" class="w-full mt-1 p-2 border rounded">
+            </div>
+            <div class="flex items-center gap-2">
+              <input id="keepAspect" type="checkbox" checked>
+              <label for="keepAspect" class="text-sm">حفظ نسبت تصویر</label>
+            </div>
+
+            <div>
+              <label class="control-label">پیش تنظیمات سریع</label>
+              <div class="mt-2 flex flex-wrap gap-2">
+                <button class="preset px-3 py-1 border rounded" data-w="1920" data-h="1080">YouTube ویدیو (1920×1080)</button>
+                <button class="preset px-3 py-1 border rounded" data-w="1280" data-h="720">HD (1280×720)</button>
+                <button class="preset px-3 py-1 border rounded" data-w="1080" data-h="1080">Instagram پست (1080×1080)</button>
+                <button class="preset px-3 py-1 border rounded" data-w="1080" data-h="1920">Instagram استوری (1080×1920)</button>
+                <button class="preset px-3 py-1 border rounded" data-w="2560" data-h="1440">YouTube Channel Art (2560×1440)</button>
+                <button class="preset px-3 py-1 border rounded" data-w="2560" data-h="1440">Aparat Channel Art (2560×1440)</button>
+                <button class="preset px-3 py-1 border rounded" data-w="1024" data-h="768">Tablet</button>
+                <button class="preset px-3 py-1 border rounded" data-w="800" data-h="600">Small</button>
+                <button class="preset px-3 py-1 border rounded" data-w="400" data-h="400">آواتار مربع</button>
+              </div>
+            </div>
+
+            <div>
+              <label class="control-label">فرمت خروجی</label>
+              <select id="formatSelect" class="w-full mt-1 p-2 border rounded">
+                <option value="image/jpeg">JPG</option>
+                <option value="image/png">PNG</option>
+                <option value="image/webp">WEBP</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="control-label">کیفیت فشرده سازی</label>
+              <input id="quality" type="range" min="0.1" max="1" step="0.1" value="0.9" class="w-full">
+              <div class="text-xs text-slate-500">مناسب برای JPG و WEBP. عدد کمتر کیفیت کمتر حجم کمتر</div>
+            </div>
+
+            <div class="flex gap-2">
+              <button id="processBtn" class="flex-1 px-4 py-2 bg-green-600 text-white rounded">اعمال و دانلود</button>
+              <button id="processZipBtn" class="flex-1 px-4 py-2 bg-sky-600 text-white rounded">دانلود همه زیپ</button>
+            </div>
+
+            <div class="mt-2 grid grid-cols-2 gap-2 text-sm">
+              <button id="rotateLeft" class="px-2 py-1 border rounded">⟲ چرخش چپ</button>
+              <button id="rotateRight" class="px-2 py-1 border rounded">⟳ چرخش راست</button>
+              <button id="flipH" class="px-2 py-1 border rounded">↔ وارون افقی</button>
+              <button id="flipV" class="px-2 py-1 border rounded">↕ وارون عمودی</button>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded shadow">
+          <h3 class="text-lg font-semibold">گزینه های پیشرفته</h3>
+          <div class="mt-3 space-y-2 text-sm text-slate-600">
+            <div>حذف متادیتا تصویر بعد از تبدیل</div>
+            <label class="inline-flex items-center gap-2 mt-2">
+              <input id="stripMeta" type="checkbox" checked>
+              <span>حذف EXIF</span>
+            </label>
+            <div class="mt-2">برش ساده قبل از تغییر سایز</div>
+            <div class="mt-2">
+              <label class="text-xs">نسبت برش</label>
+              <select id="cropAspect" class="w-full mt-1 p-2 border rounded text-sm">
+                <option value="free">آزاد</option>
+                <option value="1:1">1:1 (مربع)</option>
+                <option value="4:5">4:5 (Instagram پست نسبت عمودی)</option>
+                <option value="9:16">9:16 (استوری/عمودی)</option>
+                <option value="16:9">16:9 (ویدیو)</option>
+                <option value="2560:1440">2560:1440 (Channel Art)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Middle column preview -->
+      <section class="lg:col-span-1 bg-white p-4 rounded shadow">
+        <h3 class="text-lg font-semibold">پیش نمایش تصویر انتخابی</h3>
+        <div id="previewArea" class="mt-3 flex flex-col gap-3 items-center">
+          <div class="w-full h-64 bg-slate-100 rounded flex items-center justify-center overflow-hidden" id="canvasWrap">
+            <canvas id="previewCanvas" class="max-h-full max-w-full"></canvas>
+          </div>
+          <div class="w-full flex gap-2 justify-between">
+            <div class="text-sm text-slate-500" id="infoText">هیچ تصویری انتخاب نشده</div>
+            <div class="flex gap-2">
+              <button id="downloadSingleBtn" class="px-3 py-1 border rounded hidden">دانلود</button>
+              <button id="downloadEditedBtn" class="px-3 py-1 bg-amber-500 text-white rounded hidden">دانلود ویرایش شده</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <h4 class="font-semibold">ریز نمای تصاویر آپلود شده</h4>
+          <div id="thumbs" class="mt-3 flex gap-2 overflow-x-auto p-1"></div>
+        </div>
+      </section>
+
+      <!-- Right column log history -->
+      <section class="lg:col-span-1 bg-white p-4 rounded shadow">
+        <h3 class="text-lg font-semibold">تاریخچه عملکرد</h3>
+        <div id="log" class="mt-3 text-sm text-slate-600 max-h-[52vh] overflow-auto"></div>
+        <div class="mt-3">
+          <button id="exportLog" class="px-3 py-2 w-full border rounded">صادرات گزارش</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="mt-6 text-center text-slate-500"> ساخته شده توسط alireza xri ❤️</footer>
+  </div>
+
+  <!-- Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
+
+  <script>
+    // Helper utilities
+    const $ = v => document.querySelector(v)
+    const $$ = v => document.querySelectorAll(v)
+
+    const dropzone = $('#dropzone')
+    const fileInput = $('#fileInput')
+    const pickBtn = $('#pickBtn')
+    const clearBtn = $('#clearBtn')
+    const thumbs = $('#thumbs')
+    const previewCanvas = $('#previewCanvas')
+    const ctx = previewCanvas.getContext('2d')
+    const infoText = $('#infoText')
+    const widthInput = $('#widthInput')
+    const heightInput = $('#heightInput')
+    const keepAspect = $('#keepAspect')
+    const processBtn = $('#processBtn')
+    const processZipBtn = $('#processZipBtn')
+    const formatSelect = $('#formatSelect')
+    const quality = $('#quality')
+    const rotateLeft = $('#rotateLeft')
+    const rotateRight = $('#rotateRight')
+    const flipH = $('#flipH')
+    const flipV = $('#flipV')
+    const presetBtns = document.querySelectorAll('.preset')
+    const logEl = $('#log')
+    const downloadEditedBtn = $('#downloadEditedBtn')
+    const downloadSingleBtn = $('#downloadSingleBtn')
+    const stripMeta = $('#stripMeta')
+    const cropAspect = $('#cropAspect')
+    const processHistory = []
+
+    let files = []
+    let currentIndex = -1
+    let currentImage = null
+    let transforms = {rotate:0, flipH:false, flipV:false}
+
+    function log(msg){
+      const time = new Date().toLocaleTimeString('fa-IR')
+      const el = document.createElement('div')
+      el.textContent = `[${time}] ${msg}`
+      logEl.prepend(el)
+    }
+
+    function readFilesList(fileList){
+      files = Array.from(fileList)
+      renderThumbs()
+      if(files.length) selectImage(0)
+      log(files.length + ' فایل انتخاب شد')
+    }
+
+    function renderThumbs(){
+      thumbs.innerHTML = ''
+      files.forEach((f,i)=>{
+        const url = URL.createObjectURL(f)
+        const d = document.createElement('div')
+        d.className = 'flex flex-col items-center gap-1'
+        d.innerHTML = `<img src="${url}" class="thumb" data-i="${i}"/><div class="text-xs">${f.name}</div>`
+        thumbs.appendChild(d)
+        d.querySelector('img').addEventListener('click', ()=> selectImage(i))
+      })
+    }
+
+    function selectImage(i){
+      currentIndex = i
+      const file = files[i]
+      const url = URL.createObjectURL(file)
+      const img = new Image()
+      img.onload = ()=>{
+        currentImage = img
+        transforms = {rotate:0, flipH:false, flipV:false}
+        fitCanvasToImage(img)
+        drawToCanvas()
+        infoText.textContent = `${file.name} — ${img.width}x${img.height}`
+        downloadEditedBtn.classList.remove('hidden')
+        downloadSingleBtn.classList.remove('hidden')
+      }
+      img.src = url
+    }
+
+    function fitCanvasToImage(img){
+      const wrap = document.getElementById('canvasWrap')
+      const maxW = wrap.clientWidth
+      const maxH = wrap.clientHeight
+      let ratio = Math.min(maxW/img.width, maxH/img.height, 1)
+      previewCanvas.width = Math.round(img.width * ratio)
+      previewCanvas.height = Math.round(img.height * ratio)
+    }
+
+    function drawToCanvas(){
+      if(!currentImage) return
+      const c = previewCanvas
+      const w = c.width
+      const h = c.height
+      ctx.save()
+      ctx.clearRect(0,0,w,h)
+      // handle flips and rotation around center
+      ctx.translate(w/2, h/2)
+      if(transforms.rotate) ctx.rotate(transforms.rotate * Math.PI/180)
+      ctx.scale(transforms.flipH ? -1 : 1, transforms.flipV ? -1 : 1)
+      // draw image centered
+      ctx.drawImage(currentImage, -w/2, -h/2, w, h)
+      ctx.restore()
+    }
+
+    // process single image to target size and return blob
+    async function processImageToBlob(file){
+      // load image fresh for real dimensions
+      const img = await loadImageFromFile(file)
+      // cropping simple implementation
+      let sx = 0, sy = 0, sw = img.width, sh = img.height
+      const aspect = cropAspect.value
+      if(aspect !== 'free'){
+        const [aw, ah] = aspect.split(':').map(Number)
+        const targetRatio = aw/ah
+        const srcRatio = img.width / img.height
+        if(srcRatio > targetRatio){
+          // crop sides
+          sw = Math.round(img.height * targetRatio)
+          sx = Math.round((img.width - sw)/2)
+        } else {
+          sh = Math.round(img.width / targetRatio)
+          sy = Math.round((img.height - sh)/2)
+        }
+      }
+
+      let tw = parseInt(widthInput.value) || sw
+      let th = parseInt(heightInput.value) || sh
+      if(keepAspect.checked){
+        const srcRatio = sw/sh
+        if(widthInput.value && !heightInput.value) th = Math.round(tw / srcRatio)
+        if(heightInput.value && !widthInput.value) tw = Math.round(th * srcRatio)
+        if(!widthInput.value && !heightInput.value){
+          // keep original
+          tw = sw
+          th = sh
+        }
+      }
+
+      // create offscreen canvas
+      const off = document.createElement('canvas')
+      off.width = tw
+      off.height = th
+      const oc = off.getContext('2d')
+
+      // apply rotation and flips for final output
+      oc.save()
+      // for simplicity not rotating in final output beyond 90 increments
+      oc.drawImage(img, sx, sy, sw, sh, 0, 0, tw, th)
+      oc.restore()
+
+      const mime = formatSelect.value
+      const q = parseFloat(quality.value) || 0.9
+
+      return await new Promise(resolve=> off.toBlob(resolve, mime, q))
+    }
+
+    function loadImageFromFile(file){
+      return new Promise((res,rej)=>{
+        const url = URL.createObjectURL(file)
+        const img = new Image()
+        img.onload = ()=>{ URL.revokeObjectURL(url); res(img) }
+        img.onerror = rej
+        img.src = url
+      })
+    }
+
+    // download util
+    function downloadBlob(blob, name){
+      const a = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+      a.href = url
+      a.download = name
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      setTimeout(()=> URL.revokeObjectURL(url), 1000)
+    }
+
+    // Event wiring
+    pickBtn.addEventListener('click', ()=> fileInput.click())
+    fileInput.addEventListener('change', (e)=> readFilesList(e.target.files))
+
+    // Drag drop
+    ;['dragenter','dragover'].forEach(ev=> dropzone.addEventListener(ev, e=>{ e.preventDefault(); dropzone.classList.add('bg-slate-50') }))
+    ;['dragleave','drop'].forEach(ev=> dropzone.addEventListener(ev, e=>{ e.preventDefault(); dropzone.classList.remove('bg-slate-50') }))
+    dropzone.addEventListener('drop', e=>{ if(e.dataTransfer.files.length) readFilesList(e.dataTransfer.files) })
+
+    clearBtn.addEventListener('click', ()=>{ files=[]; thumbs.innerHTML=''; currentImage=null; infoText.textContent='هیچ تصویری انتخاب نشده'; log('پاک شد') })
+
+    // attach preset buttons (dynamic, since we re-created the doc)
+    function attachPresetListeners(){
+      document.querySelectorAll('.preset').forEach(b=> b.addEventListener('click', ()=>{
+        widthInput.value = b.dataset.w
+        heightInput.value = b.dataset.h
+      }))
+    }
+    // call after load
+    attachPresetListeners()
+
+    // simple rotate flip affect only preview not final process for simplicity
+    rotateLeft.addEventListener('click', ()=>{ transforms.rotate = (transforms.rotate - 90) % 360; drawToCanvas() })
+    rotateRight.addEventListener('click', ()=>{ transforms.rotate = (transforms.rotate + 90) % 360; drawToCanvas() })
+    flipH.addEventListener('click', ()=>{ transforms.flipH = !transforms.flipH; drawToCanvas() })
+    flipV.addEventListener('click', ()=>{ transforms.flipV = !transforms.flipV; drawToCanvas() })
+
+    // perform process for single selected image
+    processBtn.addEventListener('click', async ()=>{
+      if(currentIndex < 0) return alert('ابتدا یک تصویر انتخاب کن')
+      const file = files[currentIndex]
+      log('در حال پردازش ' + file.name)
+      try{
+        const blob = await processImageToBlob(file)
+        const ext = formatSelect.value.split('/')[1].replace('jpeg','jpg')
+        downloadBlob(blob, file.name.replace(/\.[^/.]+$/, '') + '_resized.' + ext)
+        log('پایان پردازش ' + file.name)
+      }catch(err){
+        console.error(err)
+        log('خطا در پردازش')
+      }
+    })
+
+    // process all files into zip
+    processZipBtn.addEventListener('click', async ()=>{
+      if(files.length === 0) return alert('فایلی نیست')
+      const zip = new JSZip()
+      log('شروع پردازش همه فایل ها')
+      for(let i=0;i<files.length;i++){
+        try{
+          const blob = await processImageToBlob(files[i])
+          const ext = formatSelect.value.split('/')[1].replace('jpeg','jpg')
+          zip.file(files[i].name.replace(/\.[^/.]+$/, '') + '_resized.' + ext, blob)
+          log('اضافه شد ' + files[i].name)
+        }catch(e){ log('خطا برای ' + files[i].name) }
+      }
+      const content = await zip.generateAsync({type:'blob'})
+      downloadBlob(content, 'images_resized.zip')
+      log('پایان ساخت زیپ')
+    })
+
+    // download preview canvas as edited image
+    downloadEditedBtn.addEventListener('click', ()=>{
+      if(!currentImage) return
+      previewCanvas.toBlob(b=>{
+        downloadBlob(b, 'preview_edited.png')
+      })
+    })
+
+    downloadSingleBtn.addEventListener('click', ()=>{
+      if(currentIndex<0) return
+      downloadBlob(files[currentIndex], files[currentIndex].name)
+    })
+
+    // export log
+    $('#exportLog').addEventListener('click', ()=>{
+      const txt = Array.from(logEl.children).map(n=>n.textContent).join('\n')
+      const blob = new Blob([txt], {type:'text/plain'})
+      downloadBlob(blob, 'resizer_log.txt')
+    })
+
+    // initialize sample welcome
+    log('صفحه پانتر آماده است. فایل ها را رها کن')
+  </script>
+</body>
+</html>
